@@ -1,0 +1,26 @@
+{
+  "gameSettings": {
+    "language": "zh-TW",
+    "sensitivity": 0.5
+  },
+  "magicCommands": [
+    {
+      "keyword": "火球",
+      "action": "castFire",
+      "color": "#FF4500",
+      "sound": "fire.mp3"
+    },
+    {
+      "keyword": "護盾",
+      "action": "castShield",
+      "color": "#00BFFF",
+      "sound": "shield.mp3"
+    },
+    {
+      "keyword": "閃電",
+      "action": "castLightning",
+      "color": "#FFD700",
+      "sound": "bolt.mp3"
+    }
+  ]
+}

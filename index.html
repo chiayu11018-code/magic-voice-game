@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>聲音魔法對決</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        #visual-area { width: 300px; height: 300px; border-radius: 50%; border: 5px dashed #444; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s; }
+        #status { margin-top: 20px; color: #888; }
+        .magic-active { transform: scale(1.2); box-shadow: 0 0 50px currentColor; border-style: solid !important; }
+    </style>
+</head>
+<body>
+
+    <div id="visual-area">等待指令...</div>
+    <p id="status">點擊畫面開始施法</p>
+
+    <script>
+        let config = {};
+        const visualArea = document.getElementById('visual-area');
+        const statusText = document.getElementById('status');
+
+        // 1. 讀取設定檔
+        async function loadConfig() {
+            const response = await fetch('config.json');
+            config = await response.json();
+            initSpeech();
+        }
+
+        // 2. 初始化語音辨識
+        function initSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                statusText.innerText = "抱歉，您的瀏覽器不支援語音辨識";
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = config.gameSettings.language;
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const lastResult = event.results[event.results.length - 1][0].transcript.trim();
+                statusText.innerText = `你說了：${lastResult}`;
+                checkCommand(lastResult);
+            };
+
+            recognition.onstart = () => { statusText.innerText = "魔法偵測中..."; };
+            
+            // 點擊畫面啟動（瀏覽器安全性限制）
+            document.body.onclick = () => recognition.start();
+        }
+
+        // 3. 檢查指令
+        function checkCommand(text) {
+            const command = config.magicCommands.find(c => text.includes(c.keyword));
+            if (command) {
+                executeMagic(command);
+            }
+        }
+
+        // 4. 執行效果
+        function executeMagic(cmd) {
+            visualArea.innerText = cmd.keyword;
+            visualArea.style.color = cmd.color;
+            visualArea.classList.add('magic-active');
+            
+            // 播放對應音效 (路徑: /sounds/...)
+            const audio = new Audio(`sounds/${cmd.sound}`);
+            audio.play().catch(e => console.log("音效檔不存在"));
+
+            setTimeout(() => {
+                visualArea.classList.remove('magic-active');
+                visualArea.innerText = "等待指令...";
+                visualArea.style.color = "white";
+            }, 2000);
+        }
+
+        loadConfig();
+    </script>
+</body>
+</html>
