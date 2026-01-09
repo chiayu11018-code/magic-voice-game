@@ -28,28 +28,30 @@
         }
 
         // 2. 初始化語音辨識
-        function initSpeech() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                statusText.innerText = "抱歉，您的瀏覽器不支援語音辨識";
-                return;
-            }
+        // 修改後的 initSpeech 片段
+function initSpeech() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        console.error("這台電腦/瀏覽器不支援語音辨識");
+        statusText.innerText = "抱歉，您的瀏覽器不支援語音辨識";
+        return;
+    }
 
-            const recognition = new SpeechRecognition();
-            recognition.lang = config.gameSettings.language;
-            recognition.continuous = true;
-            recognition.interimResults = false;
+    const recognition = new SpeechRecognition();
+    recognition.lang = config.gameSettings.language;
+    
+    recognition.onstart = () => { 
+        console.log("麥克風已啟動，開始監聽...");
+        statusText.innerText = "魔法偵測中...請說話"; 
+    };
 
-            recognition.onresult = (event) => {
-                const lastResult = event.results[event.results.length - 1][0].transcript.trim();
-                statusText.innerText = `你說了：${lastResult}`;
-                checkCommand(lastResult);
-            };
+    recognition.onerror = (event) => {
+        console.error("發生錯誤：", event.error);
+        statusText.innerText = "錯誤：" + event.error;
+    };
 
-            recognition.onstart = () => { statusText.innerText = "魔法偵測中..."; };
-            
-            // 點擊畫面啟動（瀏覽器安全性限制）
-            document.body.onclick = () => recognition.start();
+    // ... 其餘保持不變
+}
         }
 
         // 3. 檢查指令
